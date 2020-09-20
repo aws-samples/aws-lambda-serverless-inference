@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create VPC, Subnets, EFS with Access points and EC2 with the EFS mounted.
+
+Resources:
+  MountTargetVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      CidrBlock: 10.0.0.0/16
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackId
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Public
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+  MountTargetSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1a"
+      MapPublicIpOnLaunch: true
+
+  MountTargetSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.2.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1b"
+      MapPublicIpOnLaunch: true
+
+  MountTargetSubnetThree:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.3.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1c"
+      MapPublicIpOnLaunch: true
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetOne
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetTwo
+
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetThree
+  
+  
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      GroupName: EfsMountedEC2SG
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+
+  MountTargetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      GroupDescription: Security group for mount target
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp: 0.0.0.0/0
+ 
+  FileSystemResource:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      PerformanceMode: generalPurpose
+      Encrypted: true
+      FileSystemTags:
+        - Key: Name
+          Value: MLInferenceFileSystem
+
+  MountTargetResource1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetOne
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+
+  MountTargetResource2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetTwo
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+
+  MountTargetResource3:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetThree
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+ 
+  AccessPointResource:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      AccessPointTags:
+        - Key: Name
+          Value: MLInferenceAccessPoint
+      FileSystemId: !Ref FileSystemResource
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "750"
+        Path: "/ml"
+  
+
+  EfsMountInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: c5.large
+      ImageId: ami-0c94855ba95c71c99
+      KeyName: my_default_ec2
+      SecurityGroupIds:
+      - !Ref InstanceSecurityGroup
+      SubnetId: !Ref MountTargetSubnetOne
+      Tags:
+      - Key: Name
+        Value: xgboost-for-serverless-inference-cfn-ec2
+
+
+Outputs:
+  FileSystemID:
+    Description: File system ID
+    Value:
+      Ref: FileSystemResource
+  AccessPointID:
+    Description: Access Point ID
+    Value:
+      Ref: AccessPointResource

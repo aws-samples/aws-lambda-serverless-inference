@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create VPC, Subnets, EFS with Access points and EC2 with the EFS mounted.
+
+Resources:
+  MountTargetVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      CidrBlock: 10.0.0.0/16
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackId
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Application
+        Value:
+          Ref: AWS::StackName
+      - Key: Network
+        Value: Public
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+  MountTargetSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.1.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1a"
+      MapPublicIpOnLaunch: true
+
+  MountTargetSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.2.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1b"
+      MapPublicIpOnLaunch: true
+
+  MountTargetSubnetThree:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.3.0/24
+      VpcId: !Ref MountTargetVPC
+      AvailabilityZone: "us-east-1c"
+      MapPublicIpOnLaunch: true
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetOne
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetTwo
+
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref MountTargetSubnetThree
+  
+  
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      GroupName: EfsMountedEC2SG
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+
+  MountTargetSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Ref: MountTargetVPC
+      GroupDescription: Security group for mount target
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp: 0.0.0.0/0
+ 
+  FileSystemResource:
+    Type: 'AWS::EFS::FileSystem'
+    Properties:
+      PerformanceMode: generalPurpose
+      Encrypted: true
+      FileSystemTags:
+        - Key: Name
+          Value: MLInferenceFileSystem
+
+  MountTargetResource1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetOne
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+
+  MountTargetResource2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetTwo
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+
+  MountTargetResource3:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystemResource
+      SubnetId: !Ref MountTargetSubnetThree
+      SecurityGroups:
+      - !Ref MountTargetSecurityGroup
+ 
+  AccessPointResource:
+    Type: 'AWS::EFS::AccessPoint'
+    Properties:
+      AccessPointTags:
+        - Key: Name
+          Value: MLInferenceAccessPoint
+      FileSystemId: !Ref FileSystemResource
+      PosixUser:
+        Uid: "1001"
+        Gid: "1001"
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: "1001"
+          OwnerUid: "1001"
+          Permissions: "755"
+        Path: "/ml"
+  
+
+  EfsMountInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: c5.large
+      ImageId: ami-0c94855ba95c71c99
+      KeyName: my_default_ec2
+      SecurityGroupIds:
+      - !Ref InstanceSecurityGroup
+      SubnetId: !Ref MountTargetSubnetOne
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -x
+          exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+          # Installing the amazon-efs-utils Package on Amazon Linux
+          sudo yum -y install amazon-efs-utils
+           # A directory for our Python packages and model
+          mkdir -p /home/ec2-user/efs
+          # Wait for EFS File System to be ready and DNS to propagate
+          date
+          echo Waiting for EFS File System to be ready and DNS to propagate
+          until nslookup ${FileSystemResource}.efs.us-east-1.amazonaws.com; do
+            sleep 5
+          done
+          date
+          # Mount the EFS file system using Access Point
+          sudo mount -t efs -o tls,accesspoint=${AccessPointResource} ${FileSystemResource}:/ /home/ec2-user/efs
+          # Install Python and pip
+          sudo yum -y install python37
+          curl -O https://bootstrap.pypa.io/get-pip.py
+          python3 get-pip.py --user
+          # Install the required Python packages to be able to train a model and make inference
+          pip3 install joblib -t /home/ec2-user/efs/lib/
+          pip3 install pandas -t /home/ec2-user/efs/lib/
+          pip3 install sklearn -t /home/ec2-user/efs/lib/
+          pip3 install xgboost==1.1.1 -t /home/ec2-user/efs/lib/
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/efs/
+      Tags:
+      - Key: Name
+        Value: xgboost-for-serverless-inference-cfn-ec2
+    DependsOn:
+      - FileSystemResource
+      - AccessPointResource
+      - MountTargetResource1
+
+Outputs:
+  FileSystemID:
+    Description: File system ID
+    Value: !Ref FileSystemResource
+    Export:
+      Name: !Sub "${AWS::StackName}-FileSystemID"
+  AccessPointID:
+    Description: Access Point ID
+    Value: !Ref AccessPointResource
+    Export:
+      Name: !Sub "${AWS::StackName}-AccessPointID"
+  DefaultSecurityGroup:
+    Description: Default Security Group
+    Value: !GetAtt MountTargetVPC.DefaultSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-DefaultSecurityGroup"
+  MountTargetSubnetOne:
+    Description: Subnet 1 in the VPC
+    Value: !Ref MountTargetSubnetOne
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetOne"
+  MountTargetSubnetTwo:
+    Description: Subnet 2 in the VPC
+    Value: !Ref MountTargetSubnetTwo
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetTwo"
+  MountTargetSubnetThree:
+    Description: Subnet 3 in the VPC
+    Value: !Ref MountTargetSubnetThree
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetThree"
+  MountTargetVPC:
+    Description: The Mount Target VPC Id
+    Value: !Ref MountTargetVPC
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetVPC"
+  
