@@ -48,7 +48,7 @@ Note that the `template-body` parameter must include the `file://` prefix when r
 sam build
 sam deploy --guided
 ```
-Follow the prompts in the deploy process to set the stack name, EFS mount path, access point ARN, AWS Region, VPC and subnet IDs.
+Follow the prompts in the deploy process to set the stack name, AWS Region, security group ID, subnets IDs (comma separated), and Access Point ARN.
 
 You can find VPC settings, list of subnet IDs, and list of access point ARNs created previously by the CloudFormation Stack, in the setup phase, by executing the following CLI command:
 ```
