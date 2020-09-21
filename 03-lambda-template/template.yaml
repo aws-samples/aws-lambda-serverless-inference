@@ -20,7 +20,7 @@ Parameters:
   AccessPointARN:
     Type: String
     Description: Access point ARN
-    Default: arn:aws:elasticfilesystem:us-east-1:062083580489:access-point/fsap-0f3485a8f4b32a316
+    Default: arn:aws:elasticfilesystem:us-east-1:<YOUR AWS ACCOUNT ID>:access-point/fsap-0f3485a8f4b32a316
 
 Resources:
   XGBoostInferenceFunction:
