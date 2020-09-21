@@ -60,7 +60,8 @@ aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0
 ## How it works
 
 * The deployed Lambda functions are configured with your VPC and subnet settings.
-* The Lambda functions mount the EFS file system you specify. The operations in the examples use EFS to complete their tasks.
+* The Lambda functions mount the EFS file system you specify. 
+* Lambda function will load the Python Packages and XGBoost model from EFS to run the code that performs the inference.
 
 ## Testing
 
