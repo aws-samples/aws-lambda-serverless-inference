@@ -34,7 +34,7 @@ Important: this application uses various AWS services and there are costs associ
 
 ## Setup
 
-To create a VPC, subnets and EFS file system, use the `create-efs-cfn.yml` example in the `setup` directory. To deploy this template, run in a terminal:
+To create a VPC, subnets and EFS file system, use the `create-efs-cfn.yml` example in the `01-setup` directory. To deploy this template, run in a terminal:
 
 ```
 aws cloudformation create-stack --stack-name create-efs-cfn --template-body file://./create-efs-cfn.yml
