@@ -19,6 +19,8 @@ Important: this application uses various AWS services and there are costs associ
 ├── 03-lambda-template                  <-- XGBoost inference function example to use VPC and EFS
 │   └── xgboost_inference_function      <-- Python dependencies and scripts
 │   └── template.yaml                   <-- SAM template
+├── 04-lambda-test-events               <-- Lambda test events
+│   └── test-event-1.json               <-- One sample Lambda test events for Breast Cancer prediction
 ```
 
 ## Requirements
@@ -59,6 +61,10 @@ aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0
 
 * The deployed Lambda functions are configured with your VPC and subnet settings.
 * The Lambda functions mount the EFS file system you specify. The operations in the examples use EFS to complete their tasks.
+
+## Testing
+
+Now you can test your Lambda with the example test event `test-event-1.json` in the `04-lambda-test-events` directory.   
 
 ## Questions?
 
