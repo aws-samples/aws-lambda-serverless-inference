@@ -50,7 +50,7 @@ sam deploy --guided
 ```
 Follow the prompts in the deploy process to set the stack name, EFS mount path, access point ARN, AWS Region, VPC and subnet IDs.
 
-You can find VPC settings, list of subnet IDs, and list of access point ARNs for your account by executing the following CLI command:
+You can find VPC settings, list of subnet IDs, and list of access point ARNs created previously by the CloudFormation Stack, in the setup phase, by executing the following CLI command:
 ```
 aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0].Outputs"
 ```
