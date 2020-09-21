@@ -160,7 +160,7 @@ Resources:
         CreationInfo:
           OwnerGid: "1001"
           OwnerUid: "1001"
-          Permissions: "750"
+          Permissions: "755"
         Path: "/ml"
   
 
@@ -176,14 +176,45 @@ Resources:
       Tags:
       - Key: Name
         Value: xgboost-for-serverless-inference-cfn-ec2
-
+    DependsOn:
+      - FileSystemResource
+      - AccessPointResource
+      - MountTargetResource1
 
 Outputs:
   FileSystemID:
     Description: File system ID
-    Value:
-      Ref: FileSystemResource
+    Value: !Ref FileSystemResource
+    Export:
+      Name: !Sub "${AWS::StackName}-FileSystemID"
   AccessPointID:
     Description: Access Point ID
-    Value:
-      Ref: AccessPointResource
+    Value: !Ref AccessPointResource
+    Export:
+      Name: !Sub "${AWS::StackName}-AccessPointID"
+  DefaultSecurityGroup:
+    Description: Default Security Group
+    Value: !GetAtt MountTargetVPC.DefaultSecurityGroup
+    Export:
+      Name: !Sub "${AWS::StackName}-DefaultSecurityGroup"
+  MountTargetSubnetOne:
+    Description: Subnet 1 in the VPC
+    Value: !Ref MountTargetSubnetOne
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetOne"
+  MountTargetSubnetTwo:
+    Description: Subnet 2 in the VPC
+    Value: !Ref MountTargetSubnetTwo
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetTwo"
+  MountTargetSubnetThree:
+    Description: Subnet 3 in the VPC
+    Value: !Ref MountTargetSubnetThree
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetSubnetThree"
+  MountTargetVPC:
+    Description: The Mount Target VPC Id
+    Value: !Ref MountTargetVPC
+    Export:
+      Name: !Sub "${AWS::StackName}-MountTargetVPC"
+  
