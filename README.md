@@ -9,16 +9,16 @@ Important: this application uses various AWS services and there are costs associ
 
 ```bash
 .
-├── README.MD                                       <-- This instructions file
-├── 01-setup                                        <-- Creates VPC, subnets and EFS file system
-│   └── create-efs-acess-point-cfn.yml              <-- CloudFormation template to creates VPC, subnets and EFS file system
-│   └── create-efs-acess-point-ec2-cfn.yml          <-- CloudFormation template to creates VPC, subnets, EFS file system and EC2
-├── 02-train-code                                   <-- Python code used to train breast cancel XGBoost Model
-│   └── requirements.txt                            <-- Python packages needed for the training and inference
-│   └── bc_xgboost_train.py                         <-- Python file used to train breast cancel XGBoost Model
-├── 03-lambda-template                              <-- XGBoost inference function example to use VPC and EFS
-│   └── xgboost_inference_function                  <-- Python dependencies and scripts
-│   └── template.yaml                               <-- SAM template
+├── README.MD                           <-- This instructions file
+├── 01-setup                            <-- Creates VPC, subnets and EFS file system
+│   └── create-efs-cfn.yml              <-- CloudFormation template to creates VPC, subnets and EFS file system
+│   └── create-efs-ec2-cfn.yml          <-- CloudFormation template to creates VPC, subnets, EFS file system and EC2
+├── 02-train-code                       <-- Python code used to train breast cancel XGBoost Model
+│   └── requirements.txt                <-- Python packages needed for the training and inference
+│   └── bc_xgboost_train.py             <-- Python file used to train breast cancel XGBoost Model
+├── 03-lambda-template                  <-- XGBoost inference function example to use VPC and EFS
+│   └── xgboost_inference_function      <-- Python dependencies and scripts
+│   └── template.yaml                   <-- SAM template
 ```
 
 ## Requirements
@@ -34,10 +34,10 @@ Important: this application uses various AWS services and there are costs associ
 
 ## Setup
 
-To create a VPC, subnets and EFS file system, use the `create-efs-acess-point-cfn.yml` example in the `setup` directory. To deploy this template, run in a terminal:
+To create a VPC, subnets and EFS file system, use the `create-efs-cfn.yml` example in the `setup` directory. To deploy this template, run in a terminal:
 
 ```
-aws cloudformation create-stack --stack-name create-efs-acess-point --template-body file://./create-efs-acess-point-cfn.yml
+aws cloudformation create-stack --stack-name create-efs-acess-point --template-body file://./create-efs-cfn.yml
 ```
 Note that the `template-body` parameter must include the `file://` prefix when run locally.
 
@@ -52,7 +52,7 @@ Follow the prompts in the deploy process to set the stack name, EFS mount path, 
 
 You can find VPC settings, list of subnet IDs, and list of access point ARNs for your account by executing the following CLI command:
 ```
-aws cloudformation describe-stacks --stack-name create-efs-acess-point --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0].Outputs"
 ```
 
 ## How it works
