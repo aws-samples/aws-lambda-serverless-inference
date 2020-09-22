@@ -43,7 +43,7 @@ aws cloudformation create-stack --stack-name create-efs-cfn --template-body file
 ```
 Note that the `template-body` parameter must include the `file://` prefix when run locally.
 
-## Deploying examples
+## Deploying the Lambda function
 
 1. From the command line, change directory into the `03-lambda-template` directory, then run:
 ```
