@@ -1,6 +1,6 @@
-# Pay as you go machine learning inference with AWS Lambda - Example SAM applications
+# Pay as you go machine learning inference with AWS Lambda
 
-This repo contains AWS SAM templates that deploy serverless applications. The applications illustrate how to perform inference with breast cancer XGBoost ML model, and Python packages mounted from EFS.
+This repo contains AWS CloudFormation and SAM templates that deploy serverless applications. The applications illustrate how to perform inference with breast cancer XGBoost ML model, and Python packages mounted from EFS.
 
 For full details on how this works:
 - Read the Compute Blog post at: _Coming Soon_
