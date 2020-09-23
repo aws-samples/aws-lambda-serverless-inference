@@ -43,6 +43,13 @@ aws cloudformation create-stack --stack-name create-efs-cfn --template-body file
 ```
 Note that the `template-body` parameter must include the `file://` prefix when run locally.
 
+You can find VPC settings, list of subnet IDs, and list of access point ARNs created previously by the CloudFormation Stack, in the setup phase, by executing the following CLI command:
+```
+aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0].Outputs"
+```
+Expected output:
+![cloudformation describe-stacks output](./images/cloudformation-describe-stacks-output.png)
+
 ## Deploying the Lambda function
 
 1. From the command line, change directory into the `03-lambda-template` directory, then run:
@@ -52,10 +59,7 @@ sam deploy --guided
 ```
 Follow the prompts in the deploy process to set the stack name, AWS Region, security group ID, subnets IDs (comma separated), and Access Point ARN.
 
-You can find VPC settings, list of subnet IDs, and list of access point ARNs created previously by the CloudFormation Stack, in the setup phase, by executing the following CLI command:
-```
-aws cloudformation describe-stacks --stack-name create-efs-cfn --query "Stacks[0].Outputs"
-```
+![sam deploy guided input](./images/sam-deploy-guided-input.png)
 
 ## How it works
 
