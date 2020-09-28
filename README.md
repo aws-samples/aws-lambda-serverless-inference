@@ -11,7 +11,6 @@ Important: this application uses various AWS services and there are costs associ
 .
 ├── README.MD                           <-- This instructions file
 ├── 01-setup                            <-- Creates VPC, subnets and EFS file system
-│   └── create-efs-cfn.yml              <-- CloudFormation template to creates VPC, subnets and EFS file system
 │   └── create-efs-ec2-cfn.yml          <-- CloudFormation template to creates VPC, subnets, EFS file system and EC2
 ├── 02-train-code                       <-- Python code used to train breast cancel XGBoost Model
 │   └── requirements.txt                <-- Python packages needed for the training and inference
