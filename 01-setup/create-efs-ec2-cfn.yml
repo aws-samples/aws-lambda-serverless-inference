@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Create VPC, Subnets, EFS with Access points and EC2 with the EFS mounted.
+Description: Create VPC, Subnets, EFS with Access points and EC2.
 
 Resources:
   MountTargetVPC:
