@@ -164,7 +164,7 @@ Resources:
         Path: "/ml"
   
 
-  EfsMountInstance:
+  EfsMountEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: c5.large
