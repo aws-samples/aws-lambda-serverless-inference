@@ -38,16 +38,24 @@ Important: this application uses various AWS services and there are costs associ
 To create a VPC, subnets, EFS file system, and EC2 launched in the VPC, use the `create-efs-ec2-cfn.yml` in the `01-setup` directory. To deploy this template, run in a terminal:
 
 ```
-aws cloudformation create-stack --region us-east-1 --stack-name create-efs-ec2-cfn --template-body file://./create-efs-ec2-cfn.yml
+aws cloudformation create-stack --region us-east-1 \
+                                --stack-name create-efs-ec2-cfn \
+                                --template-body file://./create-efs-ec2-cfn.yml
 ```
 Note that the `template-body` parameter must include the `file://` prefix when run locally.
 
+Expected output:
+![cloudformation create-stack output](./images/cloudformation-create-stack-output.png)
+
+
+
 You can find VPC settings, list of subnet IDs, and list of access point ARNs created previously by the CloudFormation Stack, in the setup phase, by executing the following CLI command:
 ```
-aws cloudformation describe-stacks --region us-east-1 --stack-name create-efs-ec2-cfn --query "Stacks[0].Outputs"
+aws cloudformation describe-stacks --region us-east-1\
+                                   --stack-name create-efs-ec2-cfn --query "Stacks[0].Outputs"
 ```
 Expected output:
-![cloudformation describe-stacks output](./images/cloudformation-describe-stacks-output.png)
+![cloudformation describe-stack output](./images/cloudformation-describe-stack-output.png)
 
 ## Deploying the Lambda function
 
