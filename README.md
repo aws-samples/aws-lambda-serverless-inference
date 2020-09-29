@@ -38,7 +38,7 @@ Important: this application uses various AWS services and there are costs associ
 
 To create a VPC, subnets, EFS file system, and EC2 launched in the VPC, use the `create-efs-ec2-cfn.yml` in the `01-setup` directory. 
 
-You will have to replace `ParameterValue` with a Key pair name in your AWS account.
+Replace `ParameterValue` with a Key pair name in your AWS account, in order to enable SSH access to the EC2 created.
 
 To deploy this template, run in a terminal:
 
