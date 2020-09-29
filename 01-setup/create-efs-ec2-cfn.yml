@@ -1,6 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Create VPC, Subnets, EFS with Access points and EC2.
 
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access into the EC2 with mounted Access Point
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must be the name of an existing EC2 KeyPair
+
 Resources:
   MountTargetVPC:
     Type: AWS::EC2::VPC
@@ -169,7 +175,7 @@ Resources:
     Properties:
       InstanceType: c5.large
       ImageId: ami-0c94855ba95c71c99
-      KeyName: my_default_ec2
+      KeyName: !Ref "KeyName"
       SecurityGroupIds:
       - !Ref InstanceSecurityGroup
       SubnetId: !Ref MountTargetSubnetOne

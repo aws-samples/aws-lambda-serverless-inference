@@ -34,13 +34,19 @@ Important: this application uses various AWS services and there are costs associ
 1. Clone the repo onto your local development machine using `git clone`.
 
 ## Setup
+**Note that the CloudFormation stack will create all the resources in us-east-1 (N. Virginia)**. 
 
-To create a VPC, subnets, EFS file system, and EC2 launched in the VPC, use the `create-efs-ec2-cfn.yml` in the `01-setup` directory. To deploy this template, run in a terminal:
+To create a VPC, subnets, EFS file system, and EC2 launched in the VPC, use the `create-efs-ec2-cfn.yml` in the `01-setup` directory. 
+
+You will have to replace `ParameterValue` with a Key pair name in your AWS account.
+
+To deploy this template, run in a terminal:
 
 ```
 aws cloudformation create-stack --region us-east-1 \
                                 --stack-name create-efs-ec2-cfn \
-                                --template-body file://./create-efs-ec2-cfn.yml
+                                --template-body file://./create-efs-ec2-cfn.yml\
+                                --parameters  ParameterKey=KeyName,ParameterValue=my_default_ec2
 ```
 Note that the `template-body` parameter must include the `file://` prefix when run locally.
 
