@@ -3,7 +3,7 @@
 This repo contains AWS CloudFormation and SAM templates that deploy serverless applications. The applications illustrate how to perform inference with breast cancer XGBoost ML model, and Python packages mounted from EFS.
 
 For full details on how this works:
-- Read the Compute Blog post at: _Coming Soon_
+- Read the Compute Blog post at: https://aws.amazon.com/blogs/compute/pay-as-you-go-machine-learning-inference-with-aws-lambda/
 
 Important: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the [AWS Pricing page](https://aws.amazon.com/pricing/) for details. You are responsible for any AWS costs incurred. No warranty is implied in these examples.
 
