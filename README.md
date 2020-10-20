@@ -22,6 +22,7 @@ Important: this application uses various AWS services and there are costs associ
 │   └── test-event-1.json               <-- One sample Lambda test events for Breast Cancer prediction
 ```
 
+
 ## Requirements
 
 * AWS CLI already configured with Administrator permission
